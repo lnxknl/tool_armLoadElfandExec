@@ -1,0 +1,98 @@
+diff --git a/host/main.c b/host/main.c
+index 1628cb0..998ff41 100644
+--- a/host/main.c
++++ b/host/main.c
+@@ -61,7 +61,7 @@ static int exec_elf(const char *path, const ELFEnv_t *env) {
+   ELFExec_t *exec;
+   loader_env_t loader_env;
+   loader_env.env = env;
+-  load_elf(path, loader_env, &exec);
++  load_elf(path, loader_env, &exec);// @NOTE 
+   int ret = jumpTo(exec);
+   void (*doit)(void) = get_func(exec, "doit");
+   if (doit) {
+@@ -71,7 +71,7 @@ static int exec_elf(const char *path, const ELFEnv_t *env) {
+   return 0;
+ }
+ 
+-int main(void) {
++int main(void) {// @NOTE 
+   exec_elf(APP_PATH APP_NAME, &env);
+   puts("Done");
+ }
+diff --git a/loader.c b/loader.c
+index 8838532..cf5bf2a 100644
+--- a/loader.c
++++ b/loader.c
+@@ -157,7 +157,7 @@ typedef enum {
+   sdram = 1
+ } MemType_t;
+ 
+-static int loadSecData(ELFExec_t *e, ELFSection_t *s, Elf32_Shdr *h, MemType_t memType) {
++static int loadSecData(ELFExec_t *e, ELFSection_t *s, Elf32_Shdr *h, MemType_t memType) {// @NOTE 
+   if (!h->sh_size) {
+     MSG(" No data for section");
+     return 0;
+@@ -375,7 +375,7 @@ static int relocate(ELFExec_t *e, Elf32_Shdr *h, ELFSection_t *s,
+   return -1;
+ }
+ 
+-static int placeInfo(ELFExec_t *e, Elf32_Shdr *sh, const char *name, int n) {
++static int placeInfo(ELFExec_t *e, Elf32_Shdr *sh, const char *name, int n) {// @NOTE 
+   if (LOADER_STREQ(name, ".symtab")) {
+     e->symbolTable = sh->sh_offset;
+     e->symbolCount = sh->sh_size / sizeof(Elf32_Sym);
+@@ -461,7 +461,7 @@ static int placeInfo(ELFExec_t *e, Elf32_Shdr *sh, const char *name, int n) {
+   return 0;
+ }
+ 
+-static int loadSymbols(ELFExec_t *e) {
++static int loadSymbols(ELFExec_t *e) {// @NOTE 
+   int n;
+   int founded = 0;
+   MSG("Scan ELF indexes...");
+@@ -475,7 +475,7 @@ static int loadSymbols(ELFExec_t *e) {
+     if (sectHdr.sh_name)
+       readSectionName(e, sectHdr.sh_name, name, sizeof(name));
+     DBG("Examining section %d %s\n", n, name);
+-    founded |= placeInfo(e, &sectHdr, name, n);
++    founded |= placeInfo(e, &sectHdr, name, n);// @NOTE 
+     if (IS_FLAGS_SET(founded, FoundAll))
+       return FoundAll;
+   }
+@@ -571,7 +571,7 @@ int jumpTo(ELFExec_t *e) {
+   }
+ }
+ 
+-static void do_init(ELFExec_t *e) {
++static void do_init(ELFExec_t *e) {// @NOTE 
+ 
+   if (e->init_array.data) {
+     MSG("Processing section .init_array.");
+@@ -584,7 +584,7 @@ static void do_init(ELFExec_t *e) {
+     int i;
+     int n = sectHdr.sh_size >> 2;
+     for(i=0;i<n;i++) {
+-      DBG("Processing .init_array[%d] : %08x->%08x\n", i, (int)entry, (int)*entry);
++      DBG("Processing .init_array[%d] : %08x->%08x\n", i, (int)entry, (int)*entry);// @NOTE 
+       (*entry)();
+       entry++;
+     }
+@@ -680,7 +680,7 @@ int load_elf(const char *path, LOADER_USERDATA_T user_data, ELFExec_t **exec_ptr
+     DBG("Invalid elf %s\n", path);
+     return -1;
+   }
+-  if (!IS_FLAGS_SET(loadSymbols(exec), FoundValid)) {
++  if (!IS_FLAGS_SET(loadSymbols(exec), FoundValid)) {// @NOTE 
+     freeElf(exec);
+     LOADER_FREE(exec);
+     return -2;
+@@ -691,7 +691,7 @@ int load_elf(const char *path, LOADER_USERDATA_T user_data, ELFExec_t **exec_ptr
+     return -3;
+   }
+   do_init(exec);
+-  *exec_ptr = exec;
++  *exec_ptr = exec;// @NOTE 
+   return 0;
+ }
+ 
